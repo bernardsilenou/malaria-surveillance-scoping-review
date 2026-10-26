@@ -76,8 +76,11 @@ read_pubmed_nbib <- function(path) {
     year <- if (length(year_match) == 0) NA_character_ else year_match[[1]]
     next_record_number <- length(records) + 1L
 
+    title <- get_one("TI")
+    if (is.na(title) || !nzchar(title)) title <- get_one("BTI")
+
     records[[next_record_number]] <<- data.frame(
-      title = get_one("TI"),
+      title = title,
       author = if (length(get_values("AU")) == 0) NA_character_ else paste(get_values("AU"), collapse = "; "),
       year = as.character(year),
       journal = if (!is.na(get_one("JT"))) get_one("JT") else get_one("TA"),

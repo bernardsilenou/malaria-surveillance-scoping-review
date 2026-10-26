@@ -40,15 +40,36 @@ if (nrow(manual_pairs) > 0) {
       check.names = FALSE,
       na.strings = c("", "NA")
     )
-    same_pairs <- all(c("record_id1", "record_id2") %in% names(saved_review)) &&
-      nrow(saved_review) == nrow(manual_pairs) &&
-      all(as.character(saved_review$record_id1) == as.character(manual_pairs$record_id1)) &&
-      all(as.character(saved_review$record_id2) == as.character(manual_pairs$record_id2))
-    if (same_pairs) {
-      review_input <- saved_review
-      message("Loaded saved manual-review decisions; unresolved pairs will be shown again.")
+    has_pair_ids <- all(c("record_id1", "record_id2") %in% names(saved_review))
+    if (has_pair_ids) {
+      pair_key <- function(data) {
+        first_id <- as.character(data$record_id1)
+        second_id <- as.character(data$record_id2)
+        paste(pmin(first_id, second_id), pmax(first_id, second_id), sep = "::")
+      }
+      current_keys <- pair_key(manual_pairs)
+      saved_keys <- pair_key(saved_review)
+      if (!anyDuplicated(saved_keys)) {
+        saved_rows <- match(current_keys, saved_keys)
+        reused <- !is.na(saved_rows)
+        if (any(reused)) {
+          review_input <- manual_pairs
+          review_input$result <- rep(NA_character_, nrow(manual_pairs))
+          if ("result" %in% names(saved_review)) {
+            review_input$result[reused] <- as.character(saved_review$result[saved_rows[reused]])
+          }
+          message(
+            "Restored decisions for ", sum(reused), " of ", nrow(manual_pairs),
+            " current pairs; ", sum(!reused), " new pair(s) need review."
+          )
+        } else {
+          warning("No saved decisions match the current candidate pairs; starting a fresh review.")
+        }
+      } else {
+        warning("Ignoring the saved manual-review file because it contains duplicate pair IDs.")
+      }
     } else {
-      warning("Ignoring the saved manual-review file because it does not match the current candidate pairs.")
+      warning("Ignoring the saved manual-review file because it lacks the expected pair IDs.")
     }
   }
 
