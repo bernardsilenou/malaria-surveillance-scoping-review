@@ -1,0 +1,22 @@
+# RStudio project and local R session state
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Literature search exports and deduplication outputs contain citation metadata
+# and abstracts. Keep them local unless their redistribution is explicitly allowed.
+/databases/
+*.ris
+*.nbib
+
+# The protocol may be an unpublished working document; keep it local by default.
+/protocol*.docx
+
+# Local assistant/runtime metadata
+/.agents/
+/.aws/
+/.codex/
+
+# Empty legacy placeholder; use the numbered scripts instead.
+/deduplicate_and_audit_search_records.R
